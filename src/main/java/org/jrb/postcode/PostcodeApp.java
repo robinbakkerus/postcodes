@@ -5,8 +5,8 @@ import static spark.Spark.get;
 /**
  * Hello world!
  */
-public final class App {
-    private App() {
+public final class PostcodeApp {
+    private PostcodeApp() {
     }
 
     /**
@@ -14,7 +14,8 @@ public final class App {
      * @param args The arguments of the program.
      */
     public static void main(String[] args) {
-    	get("/postcode/get", (req, res) -> "Hello World");
+    	PostcodeRepo repo = new PostcodeRepo();
+    	get("/postcode/get/:postcode", (req, res) -> repo.getLocation(req.params(":postcode")));
     }
     
     

@@ -26,7 +26,7 @@ public class CsvParser {
 	private final static String SQL = "INSERT INTO Postcode_NL (postcode, street, city, province_code, lat, lon) VALUES (?,?,?,?,?,?)";
     
 	public void readCsv(String filename) throws IOException, SQLException {
-		Connection conn = null;
+//		Connection conn = null;
 		try {
 //			conn = getSqliteConnection();
 //            pstmt = conn.prepareStatement(SQL);
@@ -106,19 +106,31 @@ public class CsvParser {
 	}
 	
 	private void writeUpdatedCsv(String line) {
-		String cells[] = line.split(",");
+		String regel = line.replaceAll(",", ";");
+		regel = regel.replaceAll("\"", "");
+		regel = regel.replaceAll("Nuenen; Gerwen en Nederwetten", "Nuenen");
+		
+		String cells[] = regel.split(";");
 		String postcode = cells[2];
 		String straat = cells[5];
 		String city = cells[8];
 		String provincie = cells[10];
+		String provCode = this.getProvinceCode(provincie);
 		String latStr = cells[11];
 		String lngStr = cells[12];
-
-		System.out.println(String.format("Processing %d : %s", this.count++, line));
-		if (!this.postcodes.contains(postcode)) {
-			this.postcodes.add(postcode);
-			writeLines.add(String.format("%s,%s,%s,%s,%s,%s",
-					postcode, this.formatName(straat), this.formatName(city), this.getProvinceCode(provincie), latStr, lngStr));
+		
+		
+		if (postcode.length() != 6 || "??".contentEquals(provCode)) {
+			System.out.println(regel);
+			System.out.println(postcode + " " + provCode);
+			System.out.println(String.format("Processing %d : %s", this.count++, line));
+			System.out.println();
+		} else {
+			if (!this.postcodes.contains(postcode)) {
+				this.postcodes.add(postcode);
+				writeLines.add(String.format(" %s,%s,%s,%s,%s,%s",
+						postcode, this.formatName(straat), this.formatName(city), provCode, latStr, lngStr));
+			}
 		}
 	}
 
@@ -152,6 +164,7 @@ public class CsvParser {
 		} else if ("Flevoland".equals(provincie)) {
 			return "FL";
 		} else {
+			System.out.println(provincie + " -> ??");
 			return "??";
 		}
 	}
